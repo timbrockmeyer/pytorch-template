@@ -10,11 +10,11 @@ class Trainer(BaseTrainer):
     def __init__(self, args):
         super().__init__(args)
 
-        self.criterion = torch.nn.NLLLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
 
         # optimizer parameters
-        self.lr=args.lr, 
-        self.betas=args.betas, 
+        self.lr=args.lr
+        self.betas=args.betas
         self.weight_decay=args.weight_decay
 
     def _get_optimizer(self, model):

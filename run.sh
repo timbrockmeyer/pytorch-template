@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # training
 EPOCHS=50
@@ -7,7 +7,7 @@ DEVICE=$1
 
 # optimizer (adam) 
 LR=0.0001
-BETAS=(0.9, 0.999)
+BETAS=(0.9 0.999)
 WEIGHT_DECAY=0
 
 # dataset
@@ -20,6 +20,6 @@ python main.py \
     -epochs $EPOCHS \
     -patience $PATIENCE \
     -lr $LR \
-    -betas $BETAS \
+    # -betas $BETAS \
     -weight_decay $WEIGHT_DECAY \
     -device $DEVICE \

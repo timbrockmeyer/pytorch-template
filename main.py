@@ -55,8 +55,8 @@ if __name__ == '__main__':
     ### --- Training params --- ###
     parser.add_argument("-epochs", type=int, default=50)
     parser.add_argument("-patience", type=int, default=10)
-    parser.add_argument("-lr", type=float, default=1e-3)
-    parser.add_argument("-betas", nargs=2, type=float, default=(0.9, 0.999))
+    parser.add_argument("-lr", type=float, default=0.0001)
+    parser.add_argument("-betas", nargs='*', type=float, default=(0.9, 0.999))
     parser.add_argument("-weight_decay", type=float, default=0)
     parser.add_argument("-device", type=torch.device, default=torch.device('cuda' if torch.cuda.is_available() else 'cpu')) # cpu or cuda
 

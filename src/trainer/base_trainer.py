@@ -45,8 +45,8 @@ class BaseTrainer:
             # ...
 
             # compute loss
-            loss = self._training_step(model, batch)
-
+            loss = self._forward_step(model, batch)
+            
             # clear gradients
             optimizer.zero_grad()
 
