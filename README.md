@@ -1,2 +1,2 @@
-# PyTorch Project Templates
+# PyTorch Project Template
 
