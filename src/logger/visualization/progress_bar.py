@@ -5,7 +5,10 @@ class ProgressBar:
         
         self.pbar = tqdm(
             total=num_samples, 
-            desc=f'Epoch {epoch}/{max_epochs}' ,unit=' samples')
+            desc=f'Epoch {epoch}/{max_epochs}:',
+            unit=' samples',
+            bar_format='{desc:12}{percentage:3.0f}%|{bar:15}{r_bar}',
+        )
         
     def update(self, update_steps, metrics=None):
         if metrics is not None:

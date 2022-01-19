@@ -1,2 +1,2 @@
-from progress_bar import *
-from loss_plot import *
+from .progress_bar import *
+from .loss_plot import *

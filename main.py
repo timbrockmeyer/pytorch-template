@@ -7,6 +7,7 @@ import torch
 from src.dataloader import load_data
 from src.model import CNN
 from src.trainer import Trainer
+from src.logger import Logger
 
 def main(args):
 
@@ -25,6 +26,8 @@ def main(args):
     val_dataloader, val_size = loaders['val'].values()
     test_dataloader, test_size = loaders['test'].values()
 
+    sample_inputs, _ = next(iter(train_dataloader))
+
     # add number of samples to args
     args.train_size = train_size
     args.val_size = val_size
@@ -42,16 +45,18 @@ def main(args):
     # torch.autograd.set_detect_anomaly(True) # uncomment for debugging
 
     trainer = Trainer(args)
-    train_logger = None
+    train_logger = Logger(args)
+    train_logger.add_graph(model, sample_inputs)
 
     print('Training...')
-    model_state = trainer.fit(model, train_dataloader, val_dataloader)
+    model_state = trainer.fit(model, train_logger, train_dataloader, val_dataloader)
+    train_logger.close()
 
     print('Testing...')
     # load best model state
     model.load_state_dict(model_state)
     trainer.test(model, test_dataloader)
-    
+
 
 if __name__ == '__main__':
 

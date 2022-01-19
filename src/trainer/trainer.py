@@ -45,4 +45,4 @@ class Trainer(BaseTrainer):
         # calculate metrics
         acc = accuracy(label_predictions, true_labels)
 
-        return {'loss': loss, 'accuracy': acc}
+        return {'loss': loss, 'acc': round(acc,4)}

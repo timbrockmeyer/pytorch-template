@@ -1,6 +1,5 @@
 import torch
 
-from time import time
 from copy import deepcopy
 
 class BaseTrainer:
@@ -14,7 +13,6 @@ class BaseTrainer:
         self.patience = args.patience
 
         self.device = args.device
-        self.verbose = args.verbose
 
     def _get_optimizer(self, model):
         # return optimizer object
@@ -27,7 +25,7 @@ class BaseTrainer:
         # return loss
         raise NotImplementedError
 
-    def _train_iteration(self, model, logger, optimizer, dataloader, lr_scheduler=None):
+    def _train_iteration(self, model, optimizer, logger, dataloader, lr_scheduler=None):
         '''
         Returns the training loss for each batch of the training dataloader.
         '''
@@ -62,9 +60,9 @@ class BaseTrainer:
                 lr_scheduler.step()
 
             # logging
-            logger.update(metrics, batch)
+            metrics.update(loss=loss.item())
+            logger.update(metrics, batch[0].size(0), prefix='train/')
 
-            
         total_loss /= i
 
         return total_loss 
@@ -90,8 +88,9 @@ class BaseTrainer:
             total_loss += loss.item()
 
             # logging
+            metrics.update(loss=loss.item())
+            logger.update(metrics, batch[0].size(0), prefix='val/')
 
-            
         total_loss /= i
         
         return total_loss
@@ -110,9 +109,10 @@ class BaseTrainer:
 
             # compute metrics
             metrics = self._forward_step(model, batch)
-
+            
             # logging
-
+            metrics.update(loss=metrics['loss'].item())
+            logger.update(metrics, batch[0].size(0), prefix='test/')
 
     def fit(self, model, logger, training_dataloader, validation_dataloader=None):
         '''
@@ -125,14 +125,18 @@ class BaseTrainer:
         min_loss = float('inf')
 
         # loop over epochs
-        for epoch in range(self.epochs):
+        for epoch in range(1, self.epochs + 1):
+            # initialize logger 
+            logger.reset_epoch(epoch, 60000)
 
             # training step
             loss = self._train_iteration(model, optimizer, logger, training_dataloader)
 
             # validation step
             if validation_dataloader is not None:
-                loss = self._test_iteration(model, logger, validation_dataloader, validation=True)              
+                # reset dataloader step counter
+                logger.epoch_step = 0
+                loss = self._validation_iteration(model, logger, validation_dataloader)              
 
             # save best model
             # use best training loss if no validation data is provided 
