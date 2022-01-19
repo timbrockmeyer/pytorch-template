@@ -21,15 +21,9 @@ def main(args):
     
     # data loaders
     loaders = load_data(args)
-    train_dataloader, train_size = loaders['train'].values()
-    val_dataloader, val_size = loaders['val'].values()
-    test_dataloader, test_size = loaders['test'].values()
-
-    print(f'\nLoading data...')
-    print(f'   Training samples: {train_size}')
-    if val_dataloader is not None:
-        print(f'   Validation samples: {val_size}')
-    print(f'   Test samples: {test_size}\n')
+    train_dataloader = loaders['train']
+    val_dataloader = loaders['val']
+    test_dataloader = loaders['test']
 
     # model
     model = CNN().to(device)
@@ -37,7 +31,8 @@ def main(args):
     # torch.autograd.set_detect_anomaly(True) # uncomment for debugging
 
     trainer = Trainer(args)
-    train_logger = None
+
+
 
     print('Training...')
     model_state = trainer.fit(model, train_dataloader, val_dataloader)
@@ -52,11 +47,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    ### --- Data params --- ###
+    ### -- Data params --- ###
     parser.add_argument("-val_split", type=float, default=0.2)
     parser.add_argument("-batch_size", type=int, default=64)
 
-    ### --- Model params --- ###
+    ### -- Model params --- ###
     # ...
     
     ### --- Training params --- ###
@@ -71,7 +66,8 @@ if __name__ == '__main__':
     parser.add_argument("-log_tensorboard", type=lambda x:strtobool(x), default=False)
 
     ### --- Other --- ###
-    # ...
+    parser.add_argument("-verbose", type=lambda x:strtobool(x), default=False)
+
 
     args = parser.parse_args()
 

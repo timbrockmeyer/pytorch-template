@@ -5,10 +5,8 @@ EPOCHS=50
 PATIENCE=10
 DEVICE=$1
 
-# optimizer (adam) 
+# optimizer  
 LR=0.0001
-BETAS=(0.9 0.999)
-WEIGHT_DECAY=0
 
 # dataset
 BATCH_SIZE=64
@@ -20,6 +18,4 @@ python main.py \
     -epochs $EPOCHS \
     -patience $PATIENCE \
     -lr $LR \
-    # -betas $BETAS \
-    -weight_decay $WEIGHT_DECAY \
     -device $DEVICE \

@@ -1,5 +1,6 @@
 import torch
 
+from time import time
 from copy import deepcopy
 
 class BaseTrainer:
@@ -12,25 +13,21 @@ class BaseTrainer:
         self.epochs = args.epochs
         self.patience = args.patience
 
+        self.device = args.device
+        self.verbose = args.verbose
+
     def _get_optimizer(self, model):
-
         # return optimizer object
-
         raise NotImplementedError
 
     def _forward_step(self):
-        
         # get training samples and groundtruth labels
-
         # calculate forward step
-
         # calculate loss
-
         # return loss
-
         raise NotImplementedError
 
-    def _train_iteration(self, model, optimizer, dataloader):
+    def _train_iteration(self, model, logger, optimizer, dataloader, lr_scheduler=None):
         '''
         Returns the training loss for each batch of the training dataloader.
         '''
@@ -39,28 +36,39 @@ class BaseTrainer:
         model.train()
         torch.set_grad_enabled(True)
 
-        losses = []
-        for batch in dataloader:
+        total_loss = 0
+        for i, batch in enumerate(dataloader):
             # call hooks before iteration here
             # ...
 
-            # compute loss
-            loss = self._forward_step(model, batch)
+            # compute loss and model metrics
+            metrics = self._forward_step(model, batch)
             
             # clear gradients
             optimizer.zero_grad()
 
             # backward
+            loss = metrics['loss']
             loss.backward()
+
+            # accumulate loss
+            total_loss += loss.item()
 
             # update parameters
             optimizer.step()
 
-            losses.append(loss.cpu().item())
+            # learning rate scheduler
+            if lr_scheduler is not None:
+                lr_scheduler.step()
 
-        return losses
+            # logging
+
+            
+        total_loss /= i
+
+        return total_loss 
     
-    def _test_iteration(self, model, dataloader):
+    def _validation_iteration(self, model, logger, dataloader):
         '''
         Returns the training loss for each batch of the test dataloader.
         '''
@@ -68,80 +76,99 @@ class BaseTrainer:
         model.eval()
         torch.set_grad_enabled(False)
 
-        losses = []
-        for batch in dataloader:
+        total_loss = 0
+        for i, batch in enumerate(dataloader):
             # call hooks before iteration here
             # ...
 
-            # compute loss
-            loss = self._forward_step(model, batch)
+            # compute metrics
+            metrics = self._forward_step(model, batch)
+            loss = metrics['loss']
 
-            losses.append(loss.cpu().item())
+            # accumulate loss
+            total_loss += loss.item()
 
-        return losses
+            # logging
 
-    def fit(self, model, training_dataloader, validation_dataloader=None):
+            
+        total_loss /= i
+        
+        return total_loss
+
+    def _test_iteration(self, model, logger, dataloader):
+        '''
+        Returns the training loss for each batch of the test dataloader.
+        '''
+        # put model in test mode
+        model.eval()
+        torch.set_grad_enabled(False)
+
+        for i, batch in enumerate(dataloader):
+            # call hooks before iteration here
+            # ...
+
+            # compute metrics
+            metrics = self._forward_step(model, batch)
+
+            # logging
+
+
+    def fit(self, model, logger, training_dataloader, validation_dataloader=None):
         '''
         Fit the model.
         '''
-
         optimizer = self._get_optimizer(model)
-
-        # losses for all training steps
-        training_loss_history = []
-        validation_loss_history = []
-        
+       
         # early stopping
-        early_stopping_counter = 0
-        best_loss = float('inf')
+        early_stopping_counter = 1
+        min_loss = float('inf')
 
         # loop over epochs
         for epoch in range(self.epochs):
-            # logger 
-            ...
+            t = time()
+
             # training step
-            training_losses = self._train_iteration(model, optimizer, training_dataloader)
-            training_loss_history.extend(training_losses)
+            loss = self._train_iteration(model, optimizer, logger, training_dataloader)
 
             # validation step
             if validation_dataloader is not None:
-                validation_losses = self._test_iteration(model, validation_dataloader)
-                validation_loss_history.extend(validation_losses)
+                loss = self._test_iteration(model, logger, validation_dataloader, validation=True)              
 
-                # check early stopping
-                avg_loss = sum(validation_losses) / len(validation_losses)
-            
-            # use training data if no validation data is provided
-            else:
-                avg_loss = sum(training_losses) / len(training_losses)
-            
             # save best model
-            if avg_loss < best_loss:
-                best_loss = avg_loss
+            # use best training loss if no validation data is provided 
+            if loss < min_loss:
+                min_loss = loss
                 best_model_state = deepcopy(model.state_dict())
-                early_stopping_counter = 0
+                early_stopping_counter = 1
+                improved = True
+            else:
+                improved = False
+
+            time_elapsed = time() - t
+            # console printout
+            epoch_printout(epoch, time_elapsed, )
+            
                 
             # early stopping
             if early_stopping_counter == self.patience:
                 # end training
                 break
-            else:
-                early_stopping_counter += 1
+            
+            early_stopping_counter += 1
+        
+        return best_model_state
 
-        results = {
-            'training_losses': training_loss_history,
-            'validation_losses': validation_loss_history,
-            'best_loss': best_loss,
-            'model_dict': best_model_state
-        }
-
-        return results
-
-    def test(self, model, test_dataloader):
+    def test(self, model, logger, dataloader):
         '''
         Test the model.
         '''
-        losses = self._test_iteration(model, test_dataloader)
-        avg_loss = sum(losses) / len(losses)
+        self._test_iteration(model, logger, dataloader)
 
-        return avg_loss
+    def validate(self, model, logger, dataloader):
+        '''
+        Validate the model.
+        '''
+        loss = self._validation_iteration(model, logger, dataloader)
+
+        return loss
+        

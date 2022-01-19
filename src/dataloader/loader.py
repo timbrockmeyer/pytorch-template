@@ -28,32 +28,40 @@ def load_data(args):
         transform = ToTensor()
     )
 
-    train_data.data.to(device)
-    test_data.data.to(device)
+    # train_data.data.to(device)
+    # test_data.data.to(device)
     
     # train/validation split
     train_data_size = len(train_data)
     validation_partition_size = int(val_split * train_data_size)
     train_partition_size = train_data_size - validation_partition_size
     train_subset, validation_subset = torch.utils.data.random_split(train_data, [train_partition_size, validation_partition_size])
-
+    
     # data loaders
-    loaders = {
-        'train': DataLoader(
-            train_subset, 
-            batch_size=batch_size, 
-            shuffle=True, 
-            num_workers=1),
-        'val': DataLoader(
+    train = {
+        'loader': DataLoader(
+                train_subset, 
+                batch_size=batch_size, 
+                shuffle=True, 
+                num_workers=1),
+        'size': train_partition_size
+    }
+    val = {
+        'loader': DataLoader(
             validation_subset, 
             batch_size=batch_size, 
             shuffle=True, 
             num_workers=1) if validation_partition_size > 0 else None,
-        'test': DataLoader(
+        'size': validation_partition_size
+    }
+
+    test = {
+        'loader': DataLoader(
             test_data, 
             batch_size=batch_size, 
             shuffle=False, 
             num_workers=1),
+        'size': len(test_data)
     }
 
-    return loaders
+    return {'train': train, 'val': val, 'test': test}
