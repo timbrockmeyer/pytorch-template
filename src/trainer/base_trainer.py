@@ -62,6 +62,7 @@ class BaseTrainer:
                 lr_scheduler.step()
 
             # logging
+            logger.update(metrics, batch)
 
             
         total_loss /= i
@@ -125,7 +126,6 @@ class BaseTrainer:
 
         # loop over epochs
         for epoch in range(self.epochs):
-            t = time()
 
             # training step
             loss = self._train_iteration(model, optimizer, logger, training_dataloader)
@@ -139,15 +139,7 @@ class BaseTrainer:
             if loss < min_loss:
                 min_loss = loss
                 best_model_state = deepcopy(model.state_dict())
-                early_stopping_counter = 1
-                improved = True
-            else:
-                improved = False
-
-            time_elapsed = time() - t
-            # console printout
-            epoch_printout(epoch, time_elapsed, )
-            
+                early_stopping_counter = 1         
                 
             # early stopping
             if early_stopping_counter == self.patience:

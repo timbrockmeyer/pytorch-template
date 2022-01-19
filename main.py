@@ -25,6 +25,11 @@ def main(args):
     val_dataloader, val_size = loaders['val'].values()
     test_dataloader, test_size = loaders['test'].values()
 
+    # add number of samples to args
+    args.train_size = train_size
+    args.val_size = val_size
+    args.test_size = test_size
+
     print(f'\nLoading data...')
     print(f'   Training samples: {train_size}')
     if val_dataloader is not None:

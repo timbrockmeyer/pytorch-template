@@ -1,27 +1,7 @@
-import torch
 import pandas as pd
 import traceback
 
-from pathlib import Path
-from datetime import datetime
-
-from torch.utils.tensorboard import SummaryWriter
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
-
-
-class TensorboardWriter:
-    def __init__(self, logdir):
-        
-        self.writer = SummaryWriter(logdir)
-
-    def add_graph(self, model, model_input):
-
-        self.writer.add_graph(model, model_input)
-        self.writer.close()
-
-    def add_metrics(self):
-
-        self.writer.add_scalar('Loss/train')
 
 
 # extraction function
