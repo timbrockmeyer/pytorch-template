@@ -134,7 +134,7 @@ class BaseTrainer:
 
             # validation step
             if validation_dataloader is not None:
-                # reset dataloader step counter
+                # reset step counter for new dataloader 
                 logger.epoch_step = 0
                 loss = self._validation_iteration(model, logger, validation_dataloader)              
 
