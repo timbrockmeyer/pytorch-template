@@ -12,7 +12,7 @@ LR=0.0001
 BATCH_SIZE=64
 VAL_SPLIT=0.2
 
-python main.py \
+python train.py \
     -val_split $VAL_SPLIT \
     -batch_size $BATCH_SIZE \
     -epochs $EPOCHS \

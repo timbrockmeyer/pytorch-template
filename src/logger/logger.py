@@ -1,74 +1,101 @@
-from pathlib import Path
-from datetime import datetime
+import os
 
 from torch.utils.tensorboard import SummaryWriter
 
 from .visualization import ProgressBar
 
 class Logger:
-    def __init__(self, args):
-        self.epochs = args.epochs
+    def __init__(self, logdir, epochs, validate=False):
 
         # log directory
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        logdir = Path(f'runs/{stamp}') 
         tfevent_dir = logdir / 'tensorboard/'
-        
-        # tensorboard event writer
-        self.writer = SummaryWriter(tfevent_dir)      
 
-        # step counters
-        self.global_step = 0
-        self.epoch_step = 0
+        os.makedirs(tfevent_dir, exist_ok=True)
+        
+        # tensorboard event writers
+        self._writers = {
+            'train': SummaryWriter(
+                log_dir=tfevent_dir,
+                flush_secs=10, 
+            )
+        }
+        if validate:
+            self._writers['val'] = SummaryWriter(
+                log_dir=tfevent_dir,
+                flush_secs=10, 
+            ) 
 
         # metric trackers
-        self.metric_total = dict()
-        self.metric_avg = dict()
+        self._metric_total = dict()
+        self._metric_avg = dict()
 
-        self.pbar = None
+        # train or validate mode
+        self.mode = None
 
-    def reset_epoch(self, epoch, num_samples):
+        # step counters
+        self._global_step_counters = {
+            'train': 0, 
+            'val': 0,
+        }
+        self._epoch_step_counters = {
+            'train': 0, 
+            'val': 0,
+        }
+
+
+        # progress bar attr
+        self.epochs = epochs
+        self._pbar = None
+
+    def train(self):
+        self.mode = 'train'
+
+    def eval(self):
+        self.mode = 'val'
+
+    def new_epoch(self, epoch, num_samples):
         # init metric trackers for epoch
-        self.metric_total = dict()
-        self.metric_avg = dict()
+        self._metric_total = dict()
+        self._metric_avg = dict()
         
         # console output progress
-        if self.pbar is not None:
-            self.pbar.close()
-        self.pbar = ProgressBar(epoch, self.epochs, num_samples)
+        if self._pbar is not None:
+            self._pbar.close()
+        self._pbar = ProgressBar(epoch, self.epochs, num_samples)
 
         # number of batches processed
-        self.epoch_step = 0
+        self._epoch_step_counters['train'] = 0
+        self._epoch_step_counters['val'] = 0
 
-    def add_graph(self, model, model_input):
-        self.writer.add_graph(model, model_input)
-        # self.writer.close()
-
-    def update(self, metrics, update_steps, prefix=''):
+    def update(self, metrics):
         # increment step counters
-        self.global_step += 1
-        self.epoch_step += 1
+        self._global_step_counters[self.mode] += 1
+        self._epoch_step_counters[self.mode] += 1
         
         # iterate through all metrics being tracked
         for key, value in metrics.items():
-            # rename dict key
-            key = prefix + key
+            # rename dict key with mode as prefix
+            key = self.mode + '/' + key
 
             # update accumulator and average
-            new_total = self.metric_total.get(key, 0) + value
-            new_avg = round(new_total / self.epoch_step, 4)
+            new_total = self._metric_total.get(key, 0) + value
+            new_avg = round(new_total / self._epoch_step_counters[self.mode], 4)
 
             # update dicts
-            self.metric_total[key] = new_total
-            self.metric_avg[key] = new_avg
+            self._metric_total[key] = new_total
+            self._metric_avg[key] = new_avg
 
             # update writer
-            self.writer.add_scalar(key, value, self.global_step)
+            self._writers[self.mode].add_scalar(key, value, self._global_step_counters[self.mode])
 
         # update progress bar
-        self.pbar.update(update_steps, self.metric_avg)
+        self._pbar.update(self._metric_avg)
+
+    def add_graph(self, model, model_input):
+        self._writers['train'].add_graph(model, model_input)
 
     def close(self):
-        self.writer.flush()
-        self.writer.close()
-        self.pbar.close()
+        for writer in self._writers.values():
+            writer.flush()
+            writer.close()
+        self._pbar.close()

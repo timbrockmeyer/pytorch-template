@@ -2,6 +2,8 @@ import torch
 
 from copy import deepcopy
 
+from ..logger import Logger
+
 class BaseTrainer:
     ''' 
     Class for model training, validation and testing. 
@@ -61,7 +63,7 @@ class BaseTrainer:
 
             # logging
             metrics.update(loss=loss.item())
-            logger.update(metrics, batch[0].size(0), prefix='train/')
+            logger.update(metrics)
 
         total_loss /= i
 
@@ -89,7 +91,7 @@ class BaseTrainer:
 
             # logging
             metrics.update(loss=loss.item())
-            logger.update(metrics, batch[0].size(0), prefix='val/')
+            logger.update(metrics)
 
         total_loss /= i
         
@@ -102,7 +104,7 @@ class BaseTrainer:
         # put model in test mode
         model.eval()
         torch.set_grad_enabled(False)
-
+        
         for i, batch in enumerate(dataloader):
             # call hooks before iteration here
             # ...
@@ -112,31 +114,41 @@ class BaseTrainer:
             
             # logging
             metrics.update(loss=metrics['loss'].item())
-            logger.update(metrics, batch[0].size(0), prefix='test/')
+            logger.update(metrics)
 
-    def fit(self, model, logger, training_dataloader, validation_dataloader=None):
+    def fit(self, model, train_loader, val_loader=list(), logdir='runs/'):
         '''
         Fit the model.
         '''
         optimizer = self._get_optimizer(model)
-       
+        
+        validate = len(val_loader) > 0
+        # number of batches per epoch
+        iterations = len(train_loader) + len(val_loader) 
+
+        # load first batch for tensorboard graph
+        sample_inputs, _ = next(iter(train_loader))
+
+        logger = Logger(logdir, self.epochs, validate=validate)
+        logger.add_graph(model, sample_inputs)
+
         # early stopping
         early_stopping_counter = 1
         min_loss = float('inf')
 
         # loop over epochs
         for epoch in range(1, self.epochs + 1):
-            # initialize logger 
-            logger.reset_epoch(epoch, 60000)
+            # initialize logger
+            logger.train()
+            logger.new_epoch(epoch, iterations)
 
             # training step
-            loss = self._train_iteration(model, optimizer, logger, training_dataloader)
+            loss = self._train_iteration(model, optimizer, logger, train_loader)
 
             # validation step
-            if validation_dataloader is not None:
-                # reset step counter for new dataloader 
-                logger.epoch_step = 0
-                loss = self._validation_iteration(model, logger, validation_dataloader)              
+            if validate:
+                logger.eval()
+                loss = self._validation_iteration(model, logger, val_loader)              
 
             # save best model
             # use best training loss if no validation data is provided 
@@ -151,6 +163,8 @@ class BaseTrainer:
                 break
             
             early_stopping_counter += 1
+        
+        logger.close()
         
         return best_model_state
 
