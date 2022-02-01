@@ -21,7 +21,8 @@ Run install bash script to install packages.
 ```
 
 ## Project structure
-
+    
+    ├── ...
     ├── src
         ├── dataloader                # Data files and functions for loading data
         ├── logger                    # Tracking and visualization of metrics
