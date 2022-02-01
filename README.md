@@ -29,4 +29,6 @@ Run install bash script to install packages.
         ├── model                     # Model definition
         ├── trainer                   # Handler for model training and testing
         └── utils                     # Tools and utilities
+    train.py
+    test.py
    
