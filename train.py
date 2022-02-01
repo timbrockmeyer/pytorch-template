@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+from numpy import isin
 import torch
 
 from datetime import datetime
@@ -32,8 +33,12 @@ def main(args):
         try:
             model_state = torch.load(args.from_checkpoint)
             model.load_state_dict(model_state)
-        except:
-            raise Exception('Model definition and parameters do not match.')
+            print('Loading model parameters...')
+        except Exception as e:
+            if isinstance(e, ValueError):
+                raise ValueError('Model definition and parameters do not match.')
+            else:
+                raise type(e)('Model checkpoint parameters could not be loaded.')
     else:
         # initialize model parameters here if desired
         pass
