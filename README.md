@@ -32,8 +32,15 @@ Run install bash script to install packages.
         └── utils                     # Tools and utilities
     ├── train.py
     ├── test.py
-    
-edit the following functions:
-the dataloader function 'load_data' returns the pytorch Dataloader objects for the training and test data.
+
+### Customize project 
+Edit the following functions: 
+
+Change the dataloader function 'load_data' to return pytorch Dataloader objects for the training and test data. <br/>
+
+Define a model class in the model directory and edit the train.py and test.py files according to the model name. <br/>
+
+Define the '\_get_optimizer' and '\_forward step' functions in the Trainer class which inherits from BaseTrainer. <br/>
+They should return a pytorch optimizer class and a dictionary with a 'loss' entry and additional entries for metrics to be tracked. <br/>
 
    
