@@ -51,6 +51,9 @@ The averages of the metrics are updated and displayed on the terminal during thi
 
 <img src="https://user-images.githubusercontent.com/27029923/151994353-d293f96e-5ad8-485d-adbb-a039fb33398f.png" width="100%" height="100%">
 
+![image](https://user-images.githubusercontent.com/27029923/151995141-459071ce-7459-422d-ae76-b81f0c376e09.png)
+
+
 If specified, model checkpoints are saved periodically. Training can be resumed by specifying the model state file path.
 
 Model testing returns a dictionary with all metrics.
