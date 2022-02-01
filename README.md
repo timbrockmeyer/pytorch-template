@@ -22,10 +22,10 @@ Run install bash script to install packages.
 
 ## Project structure
 
-├── src
-    ├── dataloader                # Data files and functions for loading data
-    ├── logger                    # Tracking and visualization of metrics
-    ├── model                     # Model definition
-    ├── trainer                   # Handler for model training and testing
-    └── utils                     # Tools and utilities
+    ├── src
+        ├── dataloader                # Data files and functions for loading data
+        ├── logger                    # Tracking and visualization of metrics
+        ├── model                     # Model definition
+        ├── trainer                   # Handler for model training and testing
+        └── utils                     # Tools and utilities
    
