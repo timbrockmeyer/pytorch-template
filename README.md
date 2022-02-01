@@ -49,7 +49,7 @@ They should return a pytorch optimizer class and a dictionary with a 'loss' entr
 Model training and testing are split into different processes. The training functions will fit a model and track the specified metrics for each forward step (batch) and written to a Tensorboard event file during training. This file can be read with the provided utility functions and displayed using tensorboard.
 The averages of the metrics are updated and displayed on the terminal during this process.
 
-<img src="https://user-images.githubusercontent.com/27029923/151994353-d293f96e-5ad8-485d-adbb-a039fb33398f.png" width="65%" height="65%">
+<img src="https://user-images.githubusercontent.com/27029923/151994353-d293f96e-5ad8-485d-adbb-a039fb33398f.png" width="100%" height="100%">
 
 If specified, model checkpoints are saved periodically. Training can be resumed by specifying the model state file path.
 
