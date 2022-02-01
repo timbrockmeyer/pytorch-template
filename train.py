@@ -89,7 +89,6 @@ if __name__ == '__main__':
     parser.add_argument("-checkpoint", type=int, default=10)
     parser.add_argument("-from_checkpoint", type=str, default='')
 
-
     ### --- Logging params --- ###
     parser.add_argument("-log_tensorboard", type=lambda x:strtobool(x), default=False)
 

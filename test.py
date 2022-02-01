@@ -35,9 +35,9 @@ def main(args):
         model_state = torch.load(model_file)
         model.load_state_dict(model_state)
     except Exception as e:  # TODO: customize exceptions
-        if isinstance(e, None):
-            raise OSError('Model file not found.')
-        elif isinstance(e, None):
+        if isinstance(e, FileNotFoundError):
+            raise FileNotFoundError('Model file not found.')
+        elif isinstance(e, ValueError):
             raise ValueError('Model definition and parameters do not match.')     
         else:
             raise Exception('Unknown error while loading state')
