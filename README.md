@@ -32,4 +32,46 @@ Run install bash script to install packages.
         └── utils                     # Tools and utilities
     ├── train.py
     ├── test.py
+
+## Customize project 
+Edit the following functions: 
+
+`dataloader:` Change the dataloader function __'load_data'__ to return pytorch Dataloader objects for the training and test data. <br/>
+
+`model:` Define a model class in the model directory. <br/>
+
+`trainer:` Define the __'\_get_optimizer'__ and __'\_forward step'__ functions in the Trainer class which inherits from BaseTrainer. <br/>
+They should return a pytorch optimizer class and a dictionary with a 'loss' entry and additional entries for metrics to be tracked. <br/>
+
+`train.py / test.py:` Import and load the model, add arguments if necessary.
+
+## Usage
+
+#### Training
+The training function will fit a model and track the specified metrics for each forward step (batch). <br/>
+The averages of the metrics are updated and displayed on the terminal during this process.
+
+<img src="https://user-images.githubusercontent.com/27029923/151994353-d293f96e-5ad8-485d-adbb-a039fb33398f.png" width="100%" height="100%">
+
+#### Tensorboard
+During training, each training step is logged and written to a Tensorboard event file.
+This file can be read with the provided utility functions and displayed using tensorboard.
+
+```
+tensorboard --logdir=runs
+```
+
+<img src="https://user-images.githubusercontent.com/27029923/151995141-459071ce-7459-422d-ae76-b81f0c376e09.png" width="50%" height="50%">
+
+#### Checkpoints
+If specified, model checkpoints are saved periodically. Training can be resumed by specifying the model state file path in the *'-from_checkpoint'* argument.
+
+```
+  # example
+  python train.py -from_checkpoint "runs/20220201-155957/models/checkpoint_5.pt"
+```
+#### Testing
+Model testing returns a dictionary with all metrics within the test.py file.
+
+
    
