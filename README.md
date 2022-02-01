@@ -36,11 +36,11 @@ Run install bash script to install packages.
 ### Customize project 
 Edit the following functions: 
 
-`dataloader`: Change the dataloader function __'load_data'__ to return pytorch Dataloader objects for the training and test data. <br/>
+`dataloader:` Change the dataloader function __'load_data'__ to return pytorch Dataloader objects for the training and test data. <br/>
 
-`model`: Define a model class in the model directory and edit the __train.py__ and __test.py__ files according to the model name. <br/>
+`model:` Define a model class in the model directory and edit the __train.py__ and __test.py__ files according to the model name. <br/>
 
-`trainer`: Define the __'\_get_optimizer'__ and __'\_forward step'__ functions in the Trainer class which inherits from BaseTrainer. <br/>
+`trainer:` Define the __'\_get_optimizer'__ and __'\_forward step'__ functions in the Trainer class which inherits from BaseTrainer. <br/>
 They should return a pytorch optimizer class and a dictionary with a 'loss' entry and additional entries for metrics to be tracked. <br/>
 
    
