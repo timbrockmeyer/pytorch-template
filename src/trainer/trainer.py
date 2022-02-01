@@ -8,23 +8,24 @@ class Trainer(BaseTrainer):
     ''' 
     Class for model training, validation and testing. 
     '''
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, device, **kwargs):
+        super().__init__()
 
-        self.criterion = torch.nn.CrossEntropyLoss()
+        self.device = device
 
-        # optimizer parameters
-        self.lr=args.lr
-        self.betas=args.betas
-        self.weight_decay=args.weight_decay
+        self._lr = kwargs.get('lr', None)
+        self._betas = kwargs.get('betas', None)
+        self._weight_decay = kwargs.get('weight_decay', None)
+        
+        self._criterion = torch.nn.CrossEntropyLoss()
 
     def _get_optimizer(self, model):
 
         optimizer = torch.optim.Adam(
             model.parameters(), 
-            lr=self.lr, 
-            betas=self.betas, 
-            weight_decay=self.weight_decay
+            lr=self._lr, 
+            betas=self._betas, 
+            weight_decay=self._weight_decay
         )
         return optimizer
 
@@ -40,7 +41,7 @@ class Trainer(BaseTrainer):
         label_predictions = model(samples)
         
         # calculate loss
-        loss = self.criterion(label_predictions, true_labels)
+        loss = self._criterion(label_predictions, true_labels)
 
         # calculate metrics
         acc = accuracy(label_predictions, true_labels)

@@ -39,10 +39,19 @@ def main(args):
         pass
 
     # data loaders
-    train_dataloader, val_dataloader = load_data(args, train=True)
+    train_dataloader, val_dataloader = load_data(
+        batch_size=args.batch_size,
+        train=True,
+        val_split=args.val_split
+    )
 
     # model training/testing and results logger classes
-    trainer = Trainer()
+    trainer = Trainer(
+        args.device,
+        lr=args.lr,
+        betas=args.betas,
+        weight_decay=args.weight_decay,
+    )
 
     # logs
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")

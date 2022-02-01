@@ -1,6 +1,6 @@
-from decimal import DivisionByZero
 import torch
 
+from tqdm import tqdm
 from copy import deepcopy
 
 from ..logger import Logger
@@ -93,15 +93,15 @@ class BaseTrainer:
         
         return total_loss
 
-    def _test_iteration(self, model, logger, dataloader):
+    def _test_iteration(self, model, dataloader):
         '''
         Returns the training loss for each batch of the test dataloader.
         '''
         # put model in test mode
         model.eval()
         torch.set_grad_enabled(False)
-        
-        for batch in dataloader:
+        test_metrics = dict()
+        for i, batch in enumerate(tqdm(dataloader, desc='Testing: ', bar_format='{desc:10}{percentage:3.0f}%|{bar:20}{r_bar}')):
             # call hooks before iteration here
             # ...
 
@@ -110,7 +110,15 @@ class BaseTrainer:
             
             # logging
             metrics.update(loss=metrics['loss'].item())
-            logger.update(metrics)
+            
+            for key, value in metrics.items():
+                # update metrics accumulator 
+                test_metrics[key] = test_metrics.get(key, 0) + value
+            
+        for key, value in test_metrics.items():
+            test_metrics[key] = value / (i+1)
+
+        return test_metrics
 
     def fit(self, model, train_loader, val_loader=[], epochs=50, patience=10, checkpoint=10, logdir='runs/'):
         '''
@@ -154,7 +162,7 @@ class BaseTrainer:
                 early_stopping_counter = 1         
                 
             # early stopping
-            if early_stopping_counter == self.patience:
+            if early_stopping_counter == patience:
                 # end training
                 break
             
@@ -162,8 +170,8 @@ class BaseTrainer:
 
             ### end of epoch
             # save checkpoints
-            if self.checkpoint: # if value > 0
-                div, mod = divmod(epoch, self.checkpoint)
+            if checkpoint: # if value > 0
+                div, mod = divmod(epoch, checkpoint)
                 if mod == 0:
                     file_name = f'checkpoint_{div}.pt'
                     logger.save_model(model, file_name)
@@ -174,17 +182,19 @@ class BaseTrainer:
         
         return best_model_state
 
-    def test(self, model, logger, dataloader):
+    def test(self, model, dataloader):
         '''
         Test the model.
         '''
-        self._test_iteration(model, logger, dataloader)
+        metrics = self._test_iteration(model, dataloader)
 
-    def validate(self, model, logger, dataloader):
+        return metrics
+
+    def validate(self, model, dataloader):
         '''
         Validate the model.
         '''
-        loss = self._validation_iteration(model, logger, dataloader)
+        loss = self._validation_iteration(model, dataloader)
 
         return loss
         

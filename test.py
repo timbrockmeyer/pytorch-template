@@ -42,15 +42,19 @@ def main(args):
         else:
             raise Exception('Unknown error while loading state')
 
-    trainer = Trainer()
+    trainer = Trainer(device=args.device)
 
-    print('Testing...')
     # test data
-    test_dataloader = load_data(args, train=False)
+    test_dataloader = load_data(
+        batch_size=args.batch_size,
+        train=False,
+    )
 
-    print('Testing...')
     # load best model state
-    trainer.test(model, test_dataloader)
+    results = trainer.test(model, test_dataloader)
+
+    # use or save results here
+    print(results)
     
 
 if __name__ == '__main__':

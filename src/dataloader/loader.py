@@ -7,12 +7,9 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 
 
-def load_data(args, train=True):
+def load_data(batch_size, train=True, val_split=0):
 
     # dataset arguments
-    batch_size = args.batch_size
-    val_split = args.val_split
-    device = args.device
     data_dir = pathlib.Path(__file__).parent.resolve() / 'data'
 
     # load data
