@@ -54,6 +54,10 @@ The averages of the metrics are updated and displayed on the terminal during thi
 <img src="https://user-images.githubusercontent.com/27029923/151994353-d293f96e-5ad8-485d-adbb-a039fb33398f.png" width="100%" height="100%">
 
 #### Tensorboard
+```
+tensorboard --logdir=runs
+```
+
 During training, each training step is logged and written to a Tensorboard event file.
 This file can be read with the provided utility functions and displayed using tensorboard.
 
