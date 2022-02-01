@@ -57,7 +57,7 @@ The averages of the metrics are updated and displayed on the terminal during thi
 
 #### Tensorboard
 
-<img src="https://user-images.githubusercontent.com/27029923/151995141-459071ce-7459-422d-ae76-b81f0c376e09.png" width="65%" height="65%">
+<img src="https://user-images.githubusercontent.com/27029923/151995141-459071ce-7459-422d-ae76-b81f0c376e09.png" width="50%" height="50%">
 
 
 If specified, model checkpoints are saved periodically. Training can be resumed by specifying the model state file path.
