@@ -33,7 +33,7 @@ Run install bash script to install packages.
     ├── train.py
     ├── test.py
 
-### Customize project 
+## Customize project 
 Edit the following functions: 
 
 `dataloader:` Change the dataloader function __'load_data'__ to return pytorch Dataloader objects for the training and test data. <br/>
