@@ -22,6 +22,7 @@ Run install bash script to install packages.
 
 ## Project structure
     
+    .
     ├── ...
     ├── src
         ├── dataloader                # Data files and functions for loading data
@@ -29,6 +30,6 @@ Run install bash script to install packages.
         ├── model                     # Model definition
         ├── trainer                   # Handler for model training and testing
         └── utils                     # Tools and utilities
-    train.py
-    test.py
+    ├── train.py
+    ├── test.py
    
