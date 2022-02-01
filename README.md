@@ -2,8 +2,8 @@
 
 ## Installation
 ### Install cuda
-Follow instructions for cuda install:
-(Windows) https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html
+Follow instructions for cuda install: <br/>
+(Windows) https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html <br/>
 (Linux) https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 
 ### Install python
