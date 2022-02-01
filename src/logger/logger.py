@@ -1,4 +1,5 @@
 import os
+import torch
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -9,9 +10,11 @@ class Logger:
 
         # log directory
         tfevent_dir = logdir / 'tensorboard/'
-
         os.makedirs(tfevent_dir, exist_ok=True)
-        
+
+        self.model_dir = logdir / 'models'
+        os.makedirs(self.model_dir, exist_ok=True)
+
         # tensorboard event writers
         self._writers = {
             'train': SummaryWriter(
@@ -19,6 +22,7 @@ class Logger:
                 flush_secs=10, 
             )
         }
+
         if validate:
             self._writers['val'] = SummaryWriter(
                 log_dir=tfevent_dir,
@@ -44,7 +48,7 @@ class Logger:
 
 
         # progress bar attr
-        self.epochs = epochs
+        self._epochs = epochs
         self._pbar = None
 
     def train(self):
@@ -54,6 +58,8 @@ class Logger:
         self.mode = 'val'
 
     def new_epoch(self, epoch, num_samples):
+        self._current_epoch = epoch
+
         # init metric trackers for epoch
         self._metric_total = dict()
         self._metric_avg = dict()
@@ -61,7 +67,7 @@ class Logger:
         # console output progress
         if self._pbar is not None:
             self._pbar.close()
-        self._pbar = ProgressBar(epoch, self.epochs, num_samples)
+        self._pbar = ProgressBar(epoch, self._epochs, num_samples)
 
         # number of batches processed
         self._epoch_step_counters['train'] = 0
@@ -94,6 +100,11 @@ class Logger:
     def add_graph(self, model, model_input):
         self._writers['train'].add_graph(model, model_input)
 
+    def save_model(self, model, file_name='model'):
+        model_state = model.state_dict()
+        dir = self.model_dir / file_name
+        torch.save(model_state, dir)
+        
     def close(self):
         for writer in self._writers.values():
             writer.flush()

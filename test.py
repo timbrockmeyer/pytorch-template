@@ -1,5 +1,6 @@
-import sys
+import os
 import argparse
+from pathlib import Path
 from distutils.util import strtobool
 
 import torch
@@ -12,31 +13,43 @@ def main(args):
 
     # torch.autograd.set_detect_anomaly(True) # uncomment for debugging
 
-    print()
-    # check python and torch versions
-    print(f'Python v.{sys.version.split()[0]}')
-    print(f'PyTorch v.{torch.__version__}')
-
-    # get device
+    # args
     device = args.device
-    print(f'Device status: {device}')
+    model_arg = args.model
     
     # model
     model = CNN().to(device)
 
-    trainer = Trainer(args)
+    # parse model file arg
+    rootdir = Path('runs') 
+    if model_arg == 'last':
+        # sort dirs by date/time
+        most_recent_dir = sorted(os.listdir(rootdir), reverse=True)[0]
+        model_file = rootdir / most_recent_dir / 'models/' / 'model.pt'
+    else:
+        # explicit model file string
+        model_file = rootdir / model_arg
+
+    # load model state dict
+    try:
+        model_state = torch.load(model_file)
+        model.load_state_dict(model_state)
+    except Exception as e:  # TODO: customize exceptions
+        if isinstance(e, None):
+            raise OSError('Model file not found.')
+        elif isinstance(e, None):
+            raise ValueError('Model definition and parameters do not match.')     
+        else:
+            raise Exception('Unknown error while loading state')
+
+    trainer = Trainer()
 
     print('Testing...')
     # test data
     test_dataloader = load_data(args, train=False)
-    
-    # load model state
-    model.load_state_dict(model_state)
-    trainer.test(model, test_dataloader)
 
     print('Testing...')
     # load best model state
-    model.load_state_dict(model_state)
     trainer.test(model, test_dataloader)
     
 
@@ -47,6 +60,8 @@ if __name__ == '__main__':
     ### -- Data params --- ###
     parser.add_argument("-batch_size", type=int, default=64)
 
+    ### -- Model params --- ###
+    parser.add_argument("-model", type=str, default='last')
 
     ### --- Logging params --- ###
     parser.add_argument("-log_tensorboard", type=lambda x:strtobool(x), default=False)

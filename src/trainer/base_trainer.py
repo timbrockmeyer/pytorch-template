@@ -1,3 +1,4 @@
+from decimal import DivisionByZero
 import torch
 
 from copy import deepcopy
@@ -8,13 +9,8 @@ class BaseTrainer:
     ''' 
     Class for model training, validation and testing. 
     '''
-    def __init__(self, args):
-
-        # training parameters
-        self.epochs = args.epochs
-        self.patience = args.patience
-
-        self.device = args.device
+    def __init__(self):
+        pass
 
     def _get_optimizer(self, model):
         # return optimizer object
@@ -105,7 +101,7 @@ class BaseTrainer:
         model.eval()
         torch.set_grad_enabled(False)
         
-        for i, batch in enumerate(dataloader):
+        for batch in dataloader:
             # call hooks before iteration here
             # ...
 
@@ -116,20 +112,20 @@ class BaseTrainer:
             metrics.update(loss=metrics['loss'].item())
             logger.update(metrics)
 
-    def fit(self, model, train_loader, val_loader=list(), logdir='runs/'):
+    def fit(self, model, train_loader, val_loader=[], epochs=50, patience=10, checkpoint=10, logdir='runs/'):
         '''
         Fit the model.
         '''
         optimizer = self._get_optimizer(model)
         
-        validate = len(val_loader) > 0
-        # number of batches per epoch
-        iterations = len(train_loader) + len(val_loader) 
+        validate = len(val_loader) > 0 
+
+        iterations = len(train_loader) + len(val_loader) # number of batches per epoch
 
         # load first batch for tensorboard graph
         sample_inputs, _ = next(iter(train_loader))
 
-        logger = Logger(logdir, self.epochs, validate=validate)
+        logger = Logger(logdir, epochs, validate=validate)
         logger.add_graph(model, sample_inputs)
 
         # early stopping
@@ -137,8 +133,8 @@ class BaseTrainer:
         min_loss = float('inf')
 
         # loop over epochs
-        for epoch in range(1, self.epochs + 1):
-            # initialize logger
+        for epoch in range(1, epochs + 1):
+            ### start of epoch
             logger.train()
             logger.new_epoch(epoch, iterations)
 
@@ -163,7 +159,17 @@ class BaseTrainer:
                 break
             
             early_stopping_counter += 1
+
+            ### end of epoch
+            # save checkpoints
+            if self.checkpoint: # if value > 0
+                div, mod = divmod(epoch, self.checkpoint)
+                if mod == 0:
+                    file_name = f'checkpoint_{div}.pt'
+                    logger.save_model(model, file_name)
         
+        ### end of training
+        logger.save_model(model, 'model.pt')
         logger.close()
         
         return best_model_state

@@ -27,28 +27,37 @@ def main(args):
     # model
     model = CNN().to(device)
 
+    # check if pre-trained model should be used
     if args.from_checkpoint != '':
         try:
             model_state = torch.load(args.from_checkpoint)
             model.load_state_dict(model_state)
         except:
-            raise Exception('Model parameters to not match the checkpoint \
-                or checkpoint does not exist.')
+            raise Exception('Model definition and parameters do not match.')
+    else:
+        # initialize model parameters here if desired
+        pass
 
     # data loaders
     train_dataloader, val_dataloader = load_data(args, train=True)
 
     # model training/testing and results logger classes
-    trainer = Trainer(args)
+    trainer = Trainer()
 
     # logs
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     logdir = Path(f'runs/{stamp}') 
 
     print('Training...')
-    model_state = trainer.fit(model, train_dataloader, val_dataloader, logdir)
-
-    torch.save(model_state, logdir + 'model.pt')
+    model_state = trainer.fit(
+        model=model, 
+        train_loader=train_dataloader, 
+        val_loader=val_dataloader, 
+        epochs=args.epochs,
+        patience=args.patience,
+        checkpoint=args.checkpoint, 
+        logdir=logdir,
+    )
 
 
 if __name__ == '__main__':
