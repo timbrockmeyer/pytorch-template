@@ -32,4 +32,8 @@ Run install bash script to install packages.
         └── utils                     # Tools and utilities
     ├── train.py
     ├── test.py
+    
+edit the following functions:
+the dataloader function 'load_data' returns the pytorch Dataloader objects for the training and test data.
+
    
