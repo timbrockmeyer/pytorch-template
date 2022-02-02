@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-from numpy import isin
 import torch
 
 from datetime import datetime
@@ -11,6 +10,7 @@ from pathlib import Path
 from src.dataloader import load_data
 from src.model import CNN
 from src.trainer import Trainer
+from src.utils.tensorboard import tb2pandas, multi_tb2pandas
 
 def main(args):
 
@@ -72,6 +72,22 @@ def main(args):
         checkpoint=args.checkpoint, 
         logdir=logdir,
     )
+
+    ### example loading training steps to dataframe
+
+    # tensorboard events to dataframe
+    tbdir = logdir / 'tensorboard'
+
+    # list of dataframes e.g. for train/val
+    dfs = []
+    for file in os.listdir(tbdir):
+        if file.startswith('events.out.tfevents'):
+            path = tbdir / file
+            dfs.append(tb2pandas(path))
+
+    # train and val metrics in single dataframe
+    paths = [tbdir / file for file in os.listdir(tbdir)]
+    df = multi_tb2pandas(paths)
 
 
 if __name__ == '__main__':

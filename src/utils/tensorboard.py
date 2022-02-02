@@ -14,7 +14,7 @@ def tb2pandas(path: str) -> pd.DataFrame:
     }
     runlog_data = pd.DataFrame({"metric": [], "value": [], "step": []})
     try:
-        event_acc = EventAccumulator(path, DEFAULT_SIZE_GUIDANCE)
+        event_acc = EventAccumulator(str(path), DEFAULT_SIZE_GUIDANCE)
         event_acc.Reload()
         tags = event_acc.Tags()["scalars"]
         for tag in tags:
